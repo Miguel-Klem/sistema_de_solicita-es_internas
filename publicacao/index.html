@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Solicitações Internas</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .btn-role { transition: all 0.3s ease; border: 2px solid transparent; }
+        .btn-role:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .table thead { background-color: #212529; color: #fff; }
+        .badge-priority-Urgente { background-color: #dc3545; }
+        .badge-priority-Alta { background-color: #fd7e14; }
+        .badge-priority-Média { background-color: #0d6efd; }
+        .badge-priority-Baixa { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- TELA 1: SELEÇÃO DE PERFIL / CADASTRO INITIAL -->
+    <!-- ========================================== -->
+    <div id="view-auth" class="container py-5">
+        <div class="row justify-content-center align-items-center style-container" style="min-height: 80vh;">
+            <div class="col-lg-8 text-center">
+                <div class="mb-4">
+                    <i class="fa-solid fa-headset text-primary display-3"></i>
+                    <h1 class="fw-bold mt-3">Sistema de Solicitações Internas</h1>
+                    <p class="text-muted fs-5">Selecione o seu perfil de acesso para continuar no sistema</p>
+                </div>
+
+                <div class="row g-4 mt-2">
+                    <!-- Opção 1: Colaborador -->
+                    <div class="col-md-6">
+                        <div class="card h-100 p-4 text-center btn-role border-primary-subtle">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex p-3 mb-3">
+                                        <i class="fa-solid fa-user-gear fs-2"></i>
+                                    </div>
+                                    <h3 class="fw-bold h4">Colaborador da Empresa</h3>
+                                    <p class="text-muted small">Abra novos chamados, acompanhe suas solicitações e tire dúvidas com a equipe de suporte.</p>
+                                </div>
+                                <button onclick="selectProfile('colaborador')" class="btn btn-primary btn-lg w-100 mt-3 fw-semibold">
+                                    <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Acessar como Colaborador
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opção 2: Responsável por Setor -->
+                    <div class="col-md-6">
+                        <div class="card h-100 p-4 text-center btn-role border-dark-subtle">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="bg-dark text-white rounded-circle d-inline-flex p-3 mb-3">
+                                        <i class="fa-solid fa-user-shield fs-2"></i>
+                                    </div>
+                                    <h3 class="fw-bold h4">Responsável por Setor</h3>
+                                    <p class="text-muted small">Gerencie demandas do setor, atribua responsáveis, altere status e acompanhe relatórios.</p>
+                                </div>
+                                <button onclick="selectProfile('responsavel')" class="btn btn-dark btn-lg w-100 mt-3 fw-semibold">
+                                    <i class="fa-solid fa-user-shield me-2"></i>Acessar como Responsável
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TELA 2: INTERFACE DO COLABORADOR -->
+    <!-- ========================================== -->
+    <div id="view-colaborador" class="d-none">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 px-4 shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-headset me-2"></i>Portal do Colaborador</a>
+                <div class="d-flex align-items-center text-light">
+                    <span class="me-3"><i class="fa-solid fa-circle-user me-1"></i> Olá, <strong>Miguel Klem</strong> (Colaborador)</span>
+                    <button onclick="logout()" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket me-1"></i>Trocar Perfil</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h3 fw-bold m-0">Minhas Solicitações</h2>
+                    <p class="text-muted m-0">Acompanhe os chamados que você abriu</p>
+                </div>
+                <button class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNovaSolicitacao">
+                    <i class="fa-solid fa-plus me-2"></i>Nova Solicitação
+                </button>
+            </div>
+
+            <!-- Tabela Colaborador -->
+            <div class="card overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Título</th>
+                                <th>Categoria</th>
+                                <th>Prioridade</th>
+                                <th>Status</th>
+                                <th>Data de Abertura</th>
+                                <th class="text-center">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableColaborador">
+                            <tr><td colspan="7" class="text-center py-4 text-muted">Carregando seus chamados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TELA 3: INTERFACE DO RESPONSÁVEL POR SETOR -->
+    <!-- ========================================== -->
+    <div id="view-responsavel" class="d-none">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 px-4 shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-user-shield me-2"></i>Gestão de Setor</a>
+                <div class="d-flex align-items-center text-light">
+                    <span class="me-3"><i class="fa-solid fa-id-badge me-1"></i> Painel do <strong>Gestor de TI/Setor</strong></span>
+                    <button onclick="logout()" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket me-1"></i>Trocar Perfil</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-4">
+            <!-- Indicadores do Gestor -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card p-3 border-start border-4 border-warning">
+                        <span class="text-muted small fw-bold">CHAMADOS PENDENTES</span>
+                        <h3 class="fw-bold m-0 text-warning" id="countPendentes">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 border-start border-4 border-info">
+                        <span class="text-muted small fw-bold">EM ATENDIMENTO</span>
+                        <h3 class="fw-bold m-0 text-info" id="countAtendimento">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 border-start border-4 border-success">
+                        <span class="text-muted small fw-bold">CONCLUÍDOS</span>
+                        <h3 class="fw-bold m-0 text-success" id="countConcluidos">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 border-start border-4 border-primary">
+                        <span class="text-muted small fw-bold">TOTAL DO SETOR</span>
+                        <h3 class="fw-bold m-0 text-primary" id="countTotal">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros do Gestor -->
+            <div class="card p-3 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <select id="filterStatus" class="form-select" onchange="loadRequestsResponsavel()">
+                            <option value="">Todos os Status</option>
+                            <option value="Aberto">Aberto</option>
+                            <option value="Em atendimento">Em atendimento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="filterPriority" class="form-select" onchange="loadRequestsResponsavel()">
+                            <option value="">Todas as Prioridades</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Média">Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button onclick="loadRequestsResponsavel()" class="btn btn-dark w-100"><i class="fa-solid fa-rotate me-1"></i>Atualizar Painel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Gestão -->
+            <div class="card overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Prioridade</th>
+                                <th>Status</th>
+                                <th>Atribuído a</th>
+                                <th class="text-center">Gerenciar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableResponsavel">
+                            <tr><td colspan="7" class="text-center py-4 text-muted">Carregando solicitações do setor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL: NOVA SOLICITAÇÃO (COMPARTILHADO) -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalNovaSolicitacao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i>Nova Solicitação</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formNovaSolicitacao" onsubmit="submitForm(event)">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título do Chamado</label>
+                            <input type="text" id="title" class="form-control" placeholder="Ex: Impressora do setor sem papel" required>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Categoria</label>
+                                <select id="category_id" class="form-select" required>
+                                    <option value="">Carregando categorias...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Prioridade</label>
+                                <select id="priority" class="form-select" required>
+                                    <option value="Baixa">Baixa</option>
+                                    <option value="Média" selected>Média</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Urgente">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descrição Detalhada</label>
+                            <textarea id="description" class="form-control" rows="4" placeholder="Descreva o problema..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-1"></i>Enviar Solicitação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JS e Lógica de Alternância -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentRole = null;
+
+        // Seleciona Perfil e chaveia a interface visual
+        function selectProfile(role) {
+            currentRole = role;
+            document.getElementById('view-auth').classList.add('d-none');
+
+            if (role === 'colaborador') {
+                document.getElementById('view-colaborador').classList.remove('d-none');
+                loadCategories();
+                loadRequestsColaborador();
+            } else if (role === 'responsavel') {
+                document.getElementById('view-responsavel').classList.remove('d-none');
+                loadRequestsResponsavel();
+            }
+        }
+
+        // Retorna à tela inicial
+        function logout() {
+            currentRole = null;
+            document.getElementById('view-colaborador').classList.add('d-none');
+            document.getElementById('view-responsavel').classList.add('d-none');
+            document.getElementById('view-auth').classList.remove('d-none');
+        }
+
+        // Categoria no Modal
+        async function loadCategories() {
+            try {
+                const res = await fetch('api.php?action=get_categories');
+                const data = await res.json();
+                if (data.success) {
+                    const select = document.getElementById('category_id');
+                    select.innerHTML = '<option value="">Selecione uma categoria...</option>';
+                    data.data.forEach(cat => {
+                        select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Erro ao carregar categorias', err);
+            }
+        }
+
+        // Dados para o Colaborador
+        async function loadRequestsColaborador() {
+            const tbody = document.getElementById('tableColaborador');
+            try {
+                const res = await fetch('api.php?action=get_requests');
+                const data = await res.json();
+
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = '';
+                    data.data.forEach(req => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${req.request_number || 'N/A'}</strong></td>
+                                <td>${req.title}</td>
+                                <td><span class="badge bg-light text-dark border">${req.category_name || '-'}</span></td>
+                                <td><span class="badge badge-priority-${req.priority}">${req.priority}</span></td>
+                                <td><span class="badge bg-secondary">${req.status}</span></td>
+                                <td>${req.created_at || 'Hoje'}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma solicitação encontrada.</td></tr>';
+                }
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        // Dados e Métricas para o Responsável pelo Setor
+        async function loadRequestsResponsavel() {
+            const tbody = document.getElementById('tableResponsavel');
+            const status = document.getElementById('filterStatus').value;
+            const priority = document.getElementById('filterPriority').value;
+
+            try {
+                const res = await fetch(`api.php?action=get_requests&status=${encodeURIComponent(status)}&priority=${encodeURIComponent(priority)}`);
+                const data = await res.json();
+
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = '';
+                    
+                    // Atualiza Métricas
+                    document.getElementById('countTotal').innerText = data.data.length;
+                    document.getElementById('countPendentes').innerText = data.data.filter(r => r.status === 'Aberto').length;
+                    document.getElementById('countAtendimento').innerText = data.data.filter(r => r.status === 'Em atendimento').length;
+                    document.getElementById('countConcluidos').innerText = data.data.filter(r => r.status === 'Concluído').length;
+
+                    data.data.forEach(req => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${req.request_number || 'N/A'}</strong></td>
+                                <td>${req.title}</td>
+                                <td>${req.creator_name || 'Colaborador'}</td>
+                                <td><span class="badge badge-priority-${req.priority}">${req.priority}</span></td>
+                                <td><span class="badge bg-secondary">${req.status}</span></td>
+                                <td>${req.assigned_name || '<em>Pendente</em>'}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-dark me-1" title="Assumir / Editar"><i class="fa-solid fa-user-check"></i></button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="Ver Detalhes"><i class="fa-solid fa-eye"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum chamado no momento.</td></tr>';
+                }
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Erro ao carregar painel do gestor.</td></tr>';
+            }
+        }
+
+        // Submissão do formulário
+        async function submitForm(e) {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                category_id: document.getElementById('category_id').value,
+                priority: document.getElementById('priority').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const res = await fetch('api.php?action=create_request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Solicitação criada com sucesso!');
+                    document.getElementById('formNovaSolicitacao').reset();
+                    bootstrap.Modal.getInstance(document.getElementById('modalNovaSolicitacao')).hide();
+                    
+                    if(currentRole === 'colaborador') loadRequestsColaborador();
+                    if(currentRole === 'responsavel') loadRequestsResponsavel();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            } catch (err) {
+                alert('Erro ao enviar solicitação.');
+            }
+        }
+    </script>
+</body>
+</html>
